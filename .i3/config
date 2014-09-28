@@ -1,0 +1,406 @@
+# es@ethanschoonover.com
+# i3 config
+
+
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# see: https://faq.i3wm.org/question/4126/sessions-environment-variables/
+#
+# important information about registering with session manager
+
+set $mod Mod1
+
+set $font_combined pango:InputSansCompressed, FontAwesome 13
+set $font_big_combined pango:InputSansCompressed, FontAwesome 17
+
+# xrdb here since gdm runs xrdb with nocpp and fails to process defined macros
+exec --no-startup-id xrdb -merge ~/.Xresources
+exec --no-startup-id setxkbmap -option ctrl:nocaps
+exec --no-startup-id xsetroot -cursor_name left_ptr
+exec --no-startup-id udiskie --automount --notify --smart-tray 
+exec --no-startup-id unclutter -root -visible
+exec --no-startup-id urxvtd -q -o -f
+exec --no-startup-id volnoti
+exec --no-startup-id compton
+exec --no-startup-id copyq
+exec --no-startup-id $HOME/bin/dispmode auto
+exec --no-startup-id $HOME/bin/system-hacks
+exec --no-startup-id $HOME/bin/powermode
+
+exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
+#exec --no-startup-id /usr/bin/pa-applet --disable-key-grabbing #--disable-notifications
+#exec --no-startup-id dex -a
+#exec --no-startup-id gsettings set org.gnome.settings-daemon.plugins.cursor active false
+#exec --no-startup-id gsettings set org.gnome.desktop.interface.scaling-factor 1
+
+# hack around starting on wrong workspace (possibly due to gnome session issue)
+#exec --no-startup-id i3-msg workspace 1
+
+exec --no-startup-id echo "$0: DESKTOP_AUTOSTART_ID $DESKTOP_AUTOSTART_ID, registering with org.gnome.SessionManager"
+exec --no-startup-id dbus-send --session --print-reply=literal --dest=org.gnome.SessionManager "/org/gnome/SessionManager" org.gnome.SessionManager.RegisterClient "string:i3" "string:$DESKTOP_AUTOSTART_ID"
+exec --no-startup-id dex -a -e GNOME
+
+#exec --no-startup-id xrdb -DSOLARIZED_DARK -load ~/.Xresources
+#exec --no-startup-id setxkbmap -option ctrl:swapcaps
+
+# -grab &"
+
+# custom tests
+for_window [title="Plex"] floating enable, border none
+#for_window [title="Keep"] floating enable, border none
+for_window [title=".*Google Play Music Mini Player"] floating enable, border none
+bindsym mod4+m [title=".*Google Play Music Mini Player"] move scratchpad
+bindsym mod4+s scratchpad show
+
+
+bindsym mod4+w exec ~/bin/wifimode reload
+
+focus_follows_mouse yes
+
+#force_focus_wrapping yes
+
+#workspace_auto_back_and_forth yes
+
+# following may just be default value
+force_display_urgency_hint 500 ms
+
+#bindsym $mod+Shift+o exec "gnome-screensaver-command --lock "
+#bindsym $mod+Shift+o exec $HOME/bin/i3-utils/i3-locker
+bindsym --release $mod+Shift+o exec --no-startup-id i3lock --ignore-empty-password --color=002b36
+bindsym $mod+o exec i3-input -F 'rename workspace to "%s"' -P 'New name: '
+
+bindsym Delete exec ~/bin/audiomode up
+bindsym Home exec ~/bin/audiomode down
+bindsym Prior exec ~/bin/audiomode mute
+bindsym Next exec ~/bin/audiomode cycle
+bindsym $mod+Insert exec ~/bin/audiomode cycle
+bindsym $mod+Delete exec ~/bin/audiomode mute
+
+bindsym mod4+Delete exec ~/bin/dispmode external
+bindsym mod4+Home exec ~/bin/dispmode internal
+bindsym mod4+Prior exec ~/bin/dispmode span
+bindsym mod4+Next exec ~/bin/caffeine
+bindsym mod4+Shift+Delete exec ~/bin/dispmode menu
+
+bindsym XF86AudioRaiseVolume exec ~/bin/audiomode up
+bindsym XF86AudioLowerVolume exec ~/bin/audiomode down
+bindcode 248 exec ~/bin/audiomode cycle
+bindsym XF86AudioMute exec ~/bin/audiomode mute
+bindsym XF86AudioPlay exec clementine --play-pause
+bindsym XF86AudioStop exec clementine --stop
+bindsym XF86AudioPrev exec clementine --previous
+bindsym XF86AudioNext exec clementine --next
+
+#pactl list sinks | grep -q Mute:.yes pactl set-sink-mute 0 ${PIPESTATUS[1]}
+
+bindsym $mod+m move window to output left
+
+# Font for window titles. Will also be used by the bar unless a different font
+# is used in the bar {} block below.
+# This font is widely installed, provides lots of unicode glyphs, right-to-left
+# text rendering and scalability on retina/hidpi displays (thanks to pango).
+#font pango:InputSansCompressed, FontAwesome 13
+font $font_combined
+
+# Before i3 v4.8, we used to recommend this one as the default:
+# font -misc-fixed-medium-r-normal--13-120-75-75-C-70-iso10646-1
+# The font above is very space-efficient, that is, it looks good, sharp and
+# clear in small sizes. However, its unicode glyph coverage is limited, the old
+# X core fonts rendering does not support right-to-left and this being a bitmap
+# font, it doesn’t scale on retina/hidpi displays.
+
+# Use Mouse+$mod to drag floating windows to their wanted position
+floating_modifier $mod
+
+# start a terminal
+bindcode 130 exec i3-sensible-terminal # LANG1 on custom HHKB firmware
+bindsym $mod+Return exec i3-sensible-terminal
+bindsym $mod+Shift+Return split v, exec i3-sensible-terminal
+bindsym mod4+Shift+Return split h, exec i3-sensible-terminal
+
+# launch browser
+#bindsym $mod+b exec --no-startup-id $BROWSER
+bindcode 131 exec --no-startup-id ~/bin/i3-utils/i3-browser # LANG2 on custom HHKB firmware
+bindsym $mod+b exec --no-startup-id ~/bin/i3-utils/i3-browser
+bindsym $mod+i exec --no-startup-id ~/bin/i3-utils/i3-browser --incognito
+#bindsym $mod+Shift+b exec --no-startup-id google-chrome-unstable --user-data-dir=/home/es/.config/google-chrome-unstable/Default
+# hide chrome borders
+for_window [class="Google-chrome*" window_role="browser"] border none
+
+# kill focused window
+bindcode 98 kill
+bindsym $mod+q kill
+bindsym $mod+Shift+q focus parent, focus parent, focus parent, focus parent, focus parent, focus parent, focus parent, focus parent, focus parent, focus parent, focus parent, focus parent, kill
+
+# start dmenu (a program launcher)
+#bindsym $mod+d exec dmenu_run
+#bindsym $mod+d exec dmenu_run
+# There also is the (new) i3-dmenu-desktop which only displays applications
+# shipping a .desktop file. It is a wrapper around dmenu, so you need that
+# installed.
+#bindsym $mod+space exec --no-startup-id i3-dmenu-desktop --dmenu="/usr/bin/dmenu -i -fn $font"
+#bindsym $mod+space exec --no-startup-id i3-dmenu-desktop --dmenu="/usr/bin/dmenu -i -z -fn 'InputSansCompressed-13'"
+bindsym $mod+space exec --no-startup-id j4-dmenu-desktop --dmenu="/usr/bin/dmenu -i -z -fn 'InputSansCompressed-13'"
+bindsym $mod+Shift+space exec --no-startup-id ~/bin/sysmenu
+
+# change focus
+bindsym $mod+h focus left
+bindsym $mod+j focus down
+bindsym $mod+k focus up
+bindsym $mod+l focus right
+
+# alternatively, you can use the cursor keys:
+bindsym $mod+Left focus left
+bindsym $mod+Down focus down
+bindsym $mod+Up focus up
+bindsym $mod+Right focus right
+
+# move focused window
+set $movepx 100px
+bindsym $mod+Shift+h move left $movepx
+bindsym $mod+Shift+j move down $movepx
+bindsym $mod+Shift+k move up $movepx
+bindsym $mod+Shift+l move right $movepx
+bindsym $mod+c move absolute position center
+
+# alternatively, you can use the cursor keys:
+bindsym $mod+Shift+Left move left
+bindsym $mod+Shift+Down move down
+bindsym $mod+Shift+Up move up
+bindsym $mod+Shift+Right move right
+
+# split in horizontal orientation
+bindsym $mod+Shift+v split h
+
+# split in vertical orientation
+bindsym $mod+v split v
+
+# enter fullscreen mode for the focused container
+bindsym $mod+f fullscreen
+
+# fake full screen to browser
+bindsym --release $mod+Shift+f "exec --no-startup-id xdotool key --clearmodifiers F11 && i3-msg fullscreen"
+bindsym --release $mod+Shift+g "exec --no-startup-id xdotool key --clearmodifiers F11"
+
+# change container layout (stacked, tabbed, toggle split)
+bindsym $mod+s layout stacking
+bindsym $mod+w layout tabbed
+bindsym $mod+e layout toggle split
+
+# toggle tiling / floating
+bindsym $mod+t floating toggle
+
+# change focus between tiling / floating windows
+bindsym $mod+Shift+t focus mode_toggle
+
+# focus the parent container
+bindsym $mod+u focus parent
+
+# focus the child container
+#bindsym $mod+d focus child
+
+# switch to next/prev workspace
+bindsym $mod+n workspace next
+bindsym $mod+p workspace prev
+
+# move to next/prev workspace
+bindsym $mod+Shift+n move window to workspace next
+bindsym $mod+Shift+p move window to workspace prev
+
+set $ws1  "1:ES"
+set $ws2  "2:PCS"
+set $ws3  "3:AM"
+set $ws4  "4"
+set $ws5  "5"
+set $ws6  "6"
+set $ws7  "7"
+set $ws8  "8"
+set $ws9  "9:PCSSYNC"
+set $ws10 "10:TEST"
+
+bindsym F1 workspace $ws1
+bindsym F2 workspace $ws2
+bindsym F3 workspace $ws3
+bindsym F4 workspace $ws4
+bindsym F5 workspace $ws5
+bindsym F6 workspace $ws6
+bindsym F7 workspace $ws7
+bindsym F8 workspace $ws8
+bindsym F9 workspace $ws9
+bindsym F10 workspace $ws10
+
+bindsym Shift+F1 move container to workspace $ws1
+bindsym Shift+F2 move container to workspace $ws2
+bindsym Shift+F3 move container to workspace $ws3
+bindsym Shift+F4 move container to workspace $ws4
+bindsym Shift+F5 move container to workspace $ws5
+bindsym Shift+F6 move container to workspace $ws6
+bindsym Shift+F7 move container to workspace $ws7
+bindsym Shift+F8 move container to workspace $ws8
+bindsym Shift+F9 move container to workspace $ws9
+bindsym Shift+F10 move container to workspace $ws10
+
+
+# switch to numbered workspace
+bindsym $mod+1 workspace $ws1
+bindsym $mod+2 workspace $ws2
+bindsym $mod+3 workspace $ws3
+bindsym $mod+4 workspace $ws4
+bindsym $mod+5 workspace $ws5
+bindsym $mod+6 workspace $ws6
+bindsym $mod+7 workspace $ws7
+bindsym $mod+8 workspace $ws8
+bindsym $mod+9 workspace $ws9
+bindsym $mod+0 workspace $ws10
+
+# move focused container to workspace
+bindsym $mod+Shift+1 move container to workspace $ws1
+bindsym $mod+Shift+2 move container to workspace $ws2
+bindsym $mod+Shift+3 move container to workspace $ws3
+bindsym $mod+Shift+4 move container to workspace $ws4
+bindsym $mod+Shift+5 move container to workspace $ws5
+bindsym $mod+Shift+6 move container to workspace $ws6
+bindsym $mod+Shift+7 move container to workspace $ws7
+bindsym $mod+Shift+8 move container to workspace $ws8
+bindsym $mod+Shift+9 move container to workspace $ws9
+bindsym $mod+Shift+0 move container to workspace $ws10
+
+# reload the configuration file
+bindsym $mod+Shift+c reload
+# restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
+bindsym $mod+Shift+r restart
+# exit i3 (logs you out of your X session)
+
+# original
+bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
+
+
+# from i3-gnome
+#* use 'exec gnome-session-quit --logout'    : logout dialog
+#* use 'exec gnome-session-quit --power-off' : shutdown menu
+#If you have gnome-screensaver installed and want to use it:
+#* use 'exec gnome-screensaver-command -l'   : locks the screen
+
+#bindsym $mod+Ctrl+Shift+e exec "i3-nagbar -t warning -m 'Close all windows and exit i3?' -b 'Yes, exit i3' 'i3-msg [class=Firefox] kill'"
+#bindsym $mod+Ctrl+Shift+e [class="(?!i3)"] kill
+bindsym $mod+Ctrl+Shift+e exec ~/bin/i3-shutdown
+
+# resize window (you can also use the mouse for that)
+set $resizepx 10
+mode "resize" {
+        # These bindings trigger as soon as you enter the resize mode
+
+        # Pressing left will shrink the window’s width.
+        # Pressing right will grow the window’s width.
+        # Pressing up will shrink the window’s height.
+        # Pressing down will grow the window’s height.
+        bindsym h resize grow width $resizepx px or 10 ppt
+        bindsym j resize shrink height $resizepx px or 10 ppt
+        bindsym k resize grow height $resizepx px or 10 ppt
+        bindsym l resize shrink width $resizepx px or 10 ppt
+
+        # same bindings, but for the arrow keys
+        bindsym Left resize grow width $resizepx px or 10 ppt
+        bindsym Down resize shrink height $resizepx px or 10 ppt
+        bindsym Up resize grow height $resizepx px or 10 ppt
+        bindsym Right resize shrink width $resizepx px or 10 ppt
+
+        # back to normal: Enter or Escape
+        bindsym Return mode "default"
+        bindsym Escape mode "default"
+}
+
+bindsym $mod+r mode "resize"
+
+# Start i3bar to display a workspace bar (plus the system information i3status
+# finds out, if available)
+bar {
+	output eDP1
+        status_command "i3status -c $HOME/.i3status.conf"
+	position top
+	font $font_big_combined
+	#tray_output primary
+	binding_mode_indicator yes
+	strip_workspace_numbers yes
+        colors {
+        # solarized
+        background #073642
+        statusline #839496
+        #yellow focused_workspace #b58900 #b58900 #eee8d5
+        focused_workspace #2aa198 #2aa198 #eee8d5
+        active_workspace #cb4b16 #cb4b16 #93a1a1
+        inactive_workspace #586e75 #586e75 #93a1a1
+        }
+}
+bar {
+	output DP1
+	output DP2
+	output HDMI1
+	output HDMI2
+        status_command "i3status -c $HOME/.i3status.conf"
+	position top
+	font $font_combined
+	#tray_output primary
+	binding_mode_indicator yes
+	strip_workspace_numbers yes
+        colors {
+        # solarized
+        background #073642
+        statusline #839496
+        #yellow focused_workspace #b58900 #b58900 #eee8d5
+        focused_workspace #2aa198 #2aa198 #eee8d5
+        active_workspace #cb4b16 #cb4b16 #93a1a1
+        inactive_workspace #586e75 #586e75 #93a1a1
+        }
+}
+
+#bar {
+#	output eDP1
+#        status_command python $HOME/.i3/status.py
+#	position top
+#	font $font_big_combined
+#	#tray_output primary
+#	binding_mode_indicator yes
+#	strip_workspace_numbers yes
+#        workspace_buttons yes
+#}
+#bar {
+#	output DP1
+#	output DP2
+#	output HDMI1
+#	output HDMI2
+#        status_command python $HOME/.i3/status.py
+#	position top
+#	font $font_combined
+#	#tray_output primary
+#	binding_mode_indicator yes
+#	strip_workspace_numbers yes
+#        workspace_buttons yes
+#}
+
+# class                 border  backgr. text    indicator
+#client.focused          #859900 #859900 #fdf6e3 #2e9ef4
+#client.focused_inactive #268bd2 #268bd2 #fdf6e3 #484e50
+#client.unfocused        #333333 #93a1a1 #fdf6e3 #292d2e
+#cyan client.focused          #2aa198 #2aa198 #fdf6e3 #2e9ef4
+client.focused          #268bd2 #268bd2 #fdf6e3 #2e9ef4
+client.focused_inactive #93a1a1 #93a1a1 #fdf6e3 #2e9ef4
+client.unfocused        #073642 #073642 #657b83 #657b83
+client.urgent           #dc322f #dc322f #fdf6e3 #2e9ef4
+
+
+## from https://gist.github.com/athmane/6200074
+## Create Log out, Reboot, Poweroff bindings
+#mode "Exit (L)ogout, (R)eboot, (P)oweroff" {
+#        bindsym $mod+r exec systemctl reboot
+#        bindsym $mod+l exit
+#        bindsym $mod+p exec systemctl poweroff
+# 
+#        # back to normal: Enter or Escape
+#        bindsym Return mode "default"
+#        bindsym Escape mode "default"
+#}
+# 
+#bindsym $mod+Shift+e mode "Exit (L)ogout, (R)eboot, (P)oweroff"
+
+# cf https://github.com/ashinkarov/i3-extras
+
